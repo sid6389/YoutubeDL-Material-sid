@@ -258,8 +258,20 @@ exports.collectInfo = async (download_uid) => {
 
     let category = null;
 
+    const selected_category_uid = typeof options.selectedCategoryUid === 'string'
+        ? options.selectedCategoryUid.trim()
+        : options.selectedCategoryUid;
+    const has_valid_selected_category = !!selected_category_uid
+        && selected_category_uid !== 'null'
+        && selected_category_uid !== 'undefined';
+
+    if (has_valid_selected_category) {
+        category = await db_api.getRecord('categories', {uid: selected_category_uid});
+        if (!category) logger.warn(`Selected category ${selected_category_uid} was not found. Falling back to automatic categorization.`);
+    }
+
     // check if it fits into a category. If so, then get info again using new args
-    if (info.length === 1 || config_api.getConfigItem('ytdl_allow_playlist_categorization')) category = await categories_api.categorize(info);
+    if (!category && (info.length === 1 || config_api.getConfigItem('ytdl_allow_playlist_categorization'))) category = await categories_api.categorize(info);
 
     // set custom output if the category has one and re-retrieve info so the download manager has the right file name
     if (category && category['custom_output']) {
@@ -487,7 +499,13 @@ exports.generateArgs = async (url, type, options, user_uid = null, simulated = f
 
         if (customOutput) {
             customOutput = options.noRelativePath ? customOutput : path.join(fileFolderPath, customOutput);
-            downloadConfig = ['-o', `${customOutput}.%(ext)s`, '--write-info-json', '--print-json'];
+            const output_ends_with_separator = /[\\/]$/.test(customOutput);
+            if (output_ends_with_separator) {
+                customOutput = path.join(customOutput, videopath);
+            }
+            const output_has_ext_placeholder = customOutput.includes('%(ext)s');
+            const output_template = output_has_ext_placeholder ? customOutput : `${customOutput}.%(ext)s`;
+            downloadConfig = ['-o', output_template, '--write-info-json', '--print-json'];
         } else {
             downloadConfig = ['-o', path.join(fileFolderPath, videopath + (is_audio ? '.%(ext)s' : '.mp4')), '--write-info-json', '--print-json'];
         }

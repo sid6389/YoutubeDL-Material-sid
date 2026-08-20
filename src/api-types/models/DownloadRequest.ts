@@ -46,6 +46,10 @@ export type DownloadRequest = {
     type?: FileType;
     cropFileSettings?: CropFileSettings;
     /**
+     * Force download into this category UID instead of automatic categorization.
+     */
+    selectedCategoryUid?: string;
+    /**
      * If using youtube-dl archive, download will ignore it
      */
     ignoreArchive?: boolean;

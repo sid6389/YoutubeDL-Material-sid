@@ -10,7 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Platform } from '@angular/cdk/platform';
 import { ArgModifierDialogComponent } from 'app/dialogs/arg-modifier-dialog/arg-modifier-dialog.component';
 import { RecentVideosComponent } from 'app/components/recent-videos/recent-videos.component';
-import { DatabaseFile, Download, FileType, Playlist } from 'api-types';
+import { Category, DatabaseFile, Download, FileType, Playlist } from 'api-types';
 
 @Component({
   selector: 'app-root',
@@ -159,6 +159,7 @@ export class MainComponent implements OnInit {
 
   selectedMaxQuality = '';
   selectedQuality: string | unknown = '';
+  selectedCategoryUid: string = null;
   formats_loading = false;
 
   @ViewChild('urlinput', { read: ElementRef }) urlInput: ElementRef;
@@ -174,6 +175,10 @@ export class MainComponent implements OnInit {
   constructor(public postsService: PostsService, private youtubeSearch: YoutubeSearchService, public snackBar: MatSnackBar,
     private router: Router, public dialog: MatDialog, private platform: Platform, private route: ActivatedRoute) {
     this.audioOnly = false;
+  }
+
+  get categories(): Category[] {
+    return this.postsService.categories || [];
   }
 
   async configLoad(): Promise<void> {
@@ -377,7 +382,7 @@ export class MainComponent implements OnInit {
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
       this.postsService.downloadFile(url, type as FileType, (customQualityConfiguration || selected_quality === '' || typeof selected_quality !== 'string' ? null : selected_quality),
-        customQualityConfiguration, customArgs, additionalArgs, customOutput, youtubeUsername, youtubePassword, cropFileSettings).subscribe(res => {
+        customQualityConfiguration, customArgs, additionalArgs, customOutput, youtubeUsername, youtubePassword, cropFileSettings, this.selectedCategoryUid).subscribe(res => {
           this.current_download = res['download'];
           this.downloads.push(res['download']);
           this.download_uids.push(res['download']['uid']);
@@ -587,7 +592,7 @@ export class MainComponent implements OnInit {
     }
 
     this.postsService.generateArgs(this.url, type as FileType, (customQualityConfiguration || this.selectedQuality === '' || typeof this.selectedQuality !== 'string' ? null : this.selectedQuality),
-      customQualityConfiguration, customArgs, additionalArgs, customOutput, youtubeUsername, youtubePassword, cropFileSettings).subscribe(res => {
+      customQualityConfiguration, customArgs, additionalArgs, customOutput, youtubeUsername, youtubePassword, cropFileSettings, this.selectedCategoryUid).subscribe(res => {
         const simulated_args = res['args'];
         if (simulated_args) {
           // hide password if needed

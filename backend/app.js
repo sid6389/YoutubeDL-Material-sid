@@ -733,6 +733,7 @@ app.post('/api/downloadFile', optionalJwt, async function(req, res) {
         youtubePassword: req.body.youtubePassword,
         ui_uid: req.body.ui_uid,
         cropFileSettings: req.body.cropFileSettings,
+        selectedCategoryUid: req.body.selectedCategoryUid,
         ignoreArchive: req.body.ignoreArchive
     };
 
@@ -764,7 +765,8 @@ app.post('/api/generateArgs', optionalJwt, async function(req, res) {
         youtubeUsername: req.body.youtubeUsername,
         youtubePassword: req.body.youtubePassword,
         ui_uid: req.body.ui_uid,
-        cropFileSettings: req.body.cropFileSettings
+        cropFileSettings: req.body.cropFileSettings,
+        selectedCategoryUid: req.body.selectedCategoryUid
     };
 
     const args = await downloader_api.generateArgs(url, type, options, user_uid, true);
